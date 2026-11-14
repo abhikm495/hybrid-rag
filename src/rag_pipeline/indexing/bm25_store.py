@@ -71,6 +71,48 @@ class BM25ChunkStore:
         self._tokenized_corpus = [tokenize(t) for t in corpus_texts]
         self._bm25 = BM25Okapi(self._tokenized_corpus)
 
+    def merge_and_save(self, dir_path: Path, new_chunks: list[Chunk]) -> None:
+        """Load existing BM25 index if present, append new chunk_ids, rebuild, save."""
+        existing = self._load_chunks_for_rebuild(dir_path)
+        existing_ids = {c.chunk_id for c in existing}
+        merged = existing + [c for c in new_chunks if c.chunk_id not in existing_ids]
+        if not merged:
+            return
+        self.rebuild(merged)
+        self.save(dir_path, merged)
+
+    def _load_chunks_for_rebuild(self, dir_path: Path) -> list[Chunk]:
+        ids_path = dir_path / "chunk_ids.json"
+        corpus_path = dir_path / "corpus.jsonl"
+        if not ids_path.is_file() or not corpus_path.is_file():
+            return []
+
+        from rag_pipeline.chunking.models import ChunkMetadata, ChunkingStrategy
+
+        chunks: list[Chunk] = []
+        with corpus_path.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                row = json.loads(line)
+                text = row["text"]
+                chunks.append(
+                    Chunk(
+                        chunk_id=row["chunk_id"],
+                        text=text,
+                        metadata=ChunkMetadata(
+                            source_file="",
+                            section_heading="",
+                            chunk_index=0,
+                            chunking_strategy=ChunkingStrategy.FIXED,
+                            char_count=len(text),
+                            document_id="",
+                        ),
+                    )
+                )
+        return chunks
+
     def top_k(self, query: str, k: int = 5) -> list[tuple[str, float]]:
         if self._bm25 is None:
             raise RuntimeError("Index not built; call rebuild() or load() first")

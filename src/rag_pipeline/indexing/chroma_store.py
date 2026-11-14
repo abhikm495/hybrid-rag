@@ -31,3 +31,35 @@ class ChromaChunkStore:
 
     def count(self) -> int:
         return self._collection.count()
+
+    def find_nearest_neighbor(
+        self,
+        query_embedding: list[float],
+        *,
+        exclude_ids: set[str] | None = None,
+    ) -> tuple[str, float] | None:
+        """Return (chunk_id, cosine similarity) to the nearest indexed chunk, if any."""
+        n_indexed = self._collection.count()
+        if n_indexed == 0:
+            return None
+
+        exclude = exclude_ids or set()
+        n_results = min(max(10, len(exclude) + 1), n_indexed)
+
+        result = self._collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_results,
+            include=["distances"],
+        )
+
+        ids: list[str] = result["ids"][0]
+        distances: list[float] = result["distances"][0]
+
+        for chunk_id, distance in zip(ids, distances):
+            if chunk_id in exclude:
+                continue
+            # Chroma cosine space: distance ≈ 1 - similarity (normalized embeddings).
+            similarity = 1.0 - float(distance)
+            return chunk_id, similarity
+
+        return None
