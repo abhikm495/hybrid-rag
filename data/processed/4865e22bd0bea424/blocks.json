@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "heading",
+    "text": "API Reference",
+    "section_heading": "API Reference",
+    "heading_level": 1
+  },
+  {
+    "kind": "paragraph",
+    "text": "Short intro before any subsection.",
+    "section_heading": "API Reference",
+    "heading_level": null
+  },
+  {
+    "kind": "heading",
+    "text": "Authentication",
+    "section_heading": "API Reference > Authentication",
+    "heading_level": 2
+  },
+  {
+    "kind": "paragraph",
+    "text": "Use a Bearer token in the `Authorization` header.",
+    "section_heading": "API Reference > Authentication",
+    "heading_level": null
+  },
+  {
+    "kind": "code",
+    "text": "headers = { Authorization: \"Bearer TOKEN\" };",
+    "section_heading": "API Reference > Authentication",
+    "heading_level": null
+  }
+]

@@ -1,0 +1,13 @@
+API Reference
+
+Short intro before any subsection.
+
+Authentication
+
+Use a Bearer token in the Authorization header.
+
+headers = {"Authorization": "Bearer TOKEN"}
+
+Errors
+
+Error code 401 means invalid credentials.

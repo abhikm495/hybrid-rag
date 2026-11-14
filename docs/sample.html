@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Internal API Guide</title>
+    <style>
+      body {
+        display: none;
+      }
+    </style>
+    <script>
+      alert("you should not index this");
+    </script>
+  </head>
+  <body>
+    <nav><a href="/">Home</a></nav>
+    <main>
+      <h1>API Reference</h1>
+      <p>Short intro before any subsection.</p>
+      <h2>Authentication</h2>
+      <p>Use a Bearer token in the <code>Authorization</code> header.</p>
+      <pre><code>headers = {"Authorization": "Bearer TOKEN"}</code></pre>
+      <h2>Errors</h2>
+      <ul>
+        <li>Error code <strong>401</strong> means invalid credentials.</li>
+      </ul>
+    </main>
+    <footer>Copyright 2026</footer>
+  </body>
+</html>
