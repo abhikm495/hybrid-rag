@@ -9,7 +9,10 @@ class RetrievedChunk(BaseModel):
     chunk_id: str
     text: str
     score: float = Field(
-        description="Cosine similarity in ~[0, 1]; higher is more relevant."
+        description=(
+            "Retrieval score; higher is more relevant. "
+            "Dense uses cosine similarity (~0–1); sparse uses BM25 (unbounded)."
+        )
     )
     metadata: dict[str, str | int | float | bool]
     rank: int = Field(description="1 = best match in this result list")

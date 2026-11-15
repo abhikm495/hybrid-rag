@@ -32,6 +32,24 @@ class ChromaChunkStore:
     def count(self) -> int:
         return self._collection.count()
 
+    def get_metadata_by_ids(
+        self,
+        chunk_ids: list[str],
+    ) -> dict[str, dict[str, str | int | float | bool]]:
+        """Return Chroma metadata keyed by chunk_id (unknown ids are omitted)."""
+        if not chunk_ids:
+            return {}
+
+        result = self._collection.get(ids=chunk_ids, include=["metadatas"])
+        ids: list[str] = result.get("ids") or []
+        metadatas: list[dict | None] = result.get("metadatas") or []
+
+        out: dict[str, dict[str, str | int | float | bool]] = {}
+        for chunk_id, meta in zip(ids, metadatas, strict=True):
+            if meta is not None:
+                out[chunk_id] = meta
+        return out
+
     def find_nearest_neighbor(
         self,
         query_embedding: list[float],

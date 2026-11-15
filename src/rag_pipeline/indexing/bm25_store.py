@@ -14,8 +14,10 @@ class BM25ChunkStore:
 
     def __init__(self) -> None:
         self._chunk_ids: list[str] = []
+        self._texts: list[str] = []
         self._tokenized_corpus: list[list[str]] = []
         self._bm25: BM25Okapi | None = None
+        self._text_by_id: dict[str, str] = {}
 
     @property
     def chunk_ids(self) -> list[str]:
@@ -23,6 +25,8 @@ class BM25ChunkStore:
 
     def rebuild(self, chunks: list[Chunk]) -> None:
         self._chunk_ids = [c.chunk_id for c in chunks]
+        self._texts = [c.text for c in chunks]
+        self._text_by_id = dict(zip(self._chunk_ids, self._texts, strict=True))
         self._tokenized_corpus = [tokenize(c.text) for c in chunks]
         self._bm25 = BM25Okapi(self._tokenized_corpus)
 
@@ -68,6 +72,8 @@ class BM25ChunkStore:
         if file_ids != self._chunk_ids:
             raise ValueError("chunk_ids.json does not match corpus.jsonl")
 
+        self._texts = corpus_texts
+        self._text_by_id = dict(zip(self._chunk_ids, self._texts, strict=True))
         self._tokenized_corpus = [tokenize(t) for t in corpus_texts]
         self._bm25 = BM25Okapi(self._tokenized_corpus)
 
@@ -112,6 +118,12 @@ class BM25ChunkStore:
                     )
                 )
         return chunks
+
+    def text_by_id(self, chunk_id: str) -> str:
+        try:
+            return self._text_by_id[chunk_id]
+        except KeyError as exc:
+            raise KeyError(f"unknown chunk_id: {chunk_id}") from exc
 
     def top_k(self, query: str, k: int = 5) -> list[tuple[str, float]]:
         if self._bm25 is None:
