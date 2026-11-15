@@ -63,3 +63,33 @@ class ChromaChunkStore:
             return chunk_id, similarity
 
         return None
+
+    def search_by_embedding(
+    self,
+    query_embedding: list[float],
+    *,
+    k: int = 10,
+) -> list[tuple[str, str, dict, float]]:
+        """ Returns list of (chunk_id, text, metadata, similarity), best first. """
+        n_indexed = self._collection.count()
+        if n_indexed == 0:
+            return []
+
+        n_results = min(k, n_indexed)
+
+        result = self._collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_results,
+            include=["documents", "metadatas", "distances"],
+        )
+
+        ids: list[str] = result["ids"][0]
+        documents: list[str] = result["documents"][0]
+        metadatas: list[dict] = result["metadatas"][0]
+        distances: list[float] = result["distances"][0]
+
+        hits: list[tuple[str, str, dict, float]] = []
+        for chunk_id, doc, meta, distance in zip(ids, documents, metadatas, distances):
+            similarity = 1.0 - float(distance)
+            hits.append((chunk_id, doc, meta, similarity))
+        return hits
